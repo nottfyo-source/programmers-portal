@@ -29,6 +29,18 @@ if (cloudReady) {
   uploadsRef = db.collection('uploads');
 }
 
+const OWNER_NAME = 'سول';
+
+function isOwner() {
+  return (userName || '').trim() === OWNER_NAME;
+}
+
+function requireOwner() {
+  if (isOwner()) return true;
+  alert('الحذف متاح لسول فقط');
+  return false;
+}
+
 const STATUS = {
   done:    { label: 'تم الإنجاز', cls: 'done',    badge: 'badge-done',    dot: 'green',  activeCls: 'active-done' },
   notdone: { label: 'لم يتم',     cls: 'notdone', badge: 'badge-notdone', dot: 'red',    activeCls: 'active-notdone' },
@@ -150,6 +162,9 @@ async function saveName() {
     }
   }
   document.getElementById('name-modal').classList.remove('open');
+  renderAll();
+  renderIdeas();
+  renderUploads();
 }
 
 function switchTab(tab) {
@@ -279,8 +294,7 @@ function addTask() {
 
 function deleteTask(id) {
   const task = tasks.find(t => t.id === id);
-  if (!task) return;
-  if (task.createdBy !== userName) { alert('لا تملك صلاحية حذف هذه المهمة'); return; }
+  if (!task || !requireOwner()) return;
   showConfirm('حذف المهمة', 'هل تريد حذف هذه المهمة نهائياً؟', () => {
     tasksRef.doc(id).delete();
   });
@@ -335,8 +349,7 @@ function deleteNote(taskId, noteId) {
   const task = tasks.find(t => t.id === taskId);
   if (!task) return;
   const note = (task.notes || []).find(n => n.id === noteId);
-  if (!note) return;
-  if (note.author !== userName) { alert('لا يمكنك حذف ملاحظة شخص آخر'); return; }
+  if (!note || !requireOwner()) return;
   showConfirm('حذف الملاحظة', 'هل تريد حذف هذه الملاحظة؟', () => {
     tasksRef.doc(taskId).update({
       notes: firebase.firestore.FieldValue.arrayRemove(note)
@@ -385,8 +398,7 @@ function addIdea() {
 
 function deleteIdea(id) {
   const idea = ideas.find(i => i.id === id);
-  if (!idea) return;
-  if (idea.createdBy !== userName) { alert('لا تملك صلاحية حذف هذه الفكرة'); return; }
+  if (!idea || !requireOwner()) return;
   showConfirm('حذف الفكرة', 'هل أنت متأكد من حذف هذه الفكرة؟', () => {
     ideasRef.doc(id).delete();
   });
@@ -412,8 +424,7 @@ function deleteComment(ideaId, commentId) {
   const idea = ideas.find(i => i.id === ideaId);
   if (!idea) return;
   const comment = (idea.comments || []).find(c => c.id === commentId);
-  if (!comment) return;
-  if (comment.author !== userName) { alert('لا يمكنك حذف تعليق شخص آخر'); return; }
+  if (!comment || !requireOwner()) return;
   showConfirm('حذف التعليق', 'هل تريد حذف هذا التعليق؟', () => {
     ideasRef.doc(ideaId).update({
       comments: firebase.firestore.FieldValue.arrayRemove(comment)
@@ -494,7 +505,7 @@ function createIdeaCard(idea) {
         <div class="comment-text">${escapeHTML(c.text)} ${c.edited ? '<small style="opacity:0.5; font-size:0.6rem;">(معدل)</small>' : ''}</div>
         <div class="comment-actions">
           <button onclick="editComment('${idea.id}', '${c.id}')" title="تعديل"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-          <button onclick="deleteComment('${idea.id}', '${c.id}')" title="حذف" class="delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          ${isOwner() ? `<button onclick="deleteComment('${idea.id}', '${c.id}')" title="حذف" class="delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
         </div>
       </div>
       <div class="comment-meta">
@@ -514,9 +525,9 @@ function createIdeaCard(idea) {
         <button class="icon-btn edit" onclick="openEdit('${idea.id}', 'idea')" title="تعديل">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2L12 4.5l-7 7H2.5V9L9.5 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="icon-btn delete" onclick="deleteIdea('${idea.id}')">
+        ${isOwner() ? `<button class="icon-btn delete" onclick="deleteIdea('${idea.id}')">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4.5M8.5 6v4.5M3 3.5l.7 8a.5.5 0 00.5.5h5.6a.5.5 0 00.5-.5l.7-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        </button>` : ''}
       </div>
     </div>
     <div class="idea-details">
@@ -617,7 +628,7 @@ function createCard(task, idx) {
         <div class="comment-text">${escapeHTML(n.text)} ${n.edited ? '<small style="opacity:0.5; font-size:0.6rem;">(معدل)</small>' : ''}</div>
         <div class="comment-actions">
           <button onclick="editNote('${task.id}', '${n.id}')" title="تعديل"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-          <button onclick="deleteNote('${task.id}', '${n.id}')" title="حذف" class="delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          ${isOwner() ? `<button onclick="deleteNote('${task.id}', '${n.id}')" title="حذف" class="delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
         </div>
       </div>
       <div class="comment-meta">
@@ -635,7 +646,7 @@ function createCard(task, idx) {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
         </button>
         <button class="icon-btn edit" onclick="openEdit('${task.id}', 'task')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2L12 4.5l-7 7H2.5V9L9.5 2z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button class="icon-btn delete" onclick="deleteTask('${task.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4.5M8.5 6v4.5M3 3.5l.7 8a.5.5 0 00.5.5h5.6a.5.5 0 00.5-.5l.7-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        ${isOwner() ? `<button class="icon-btn delete" onclick="deleteTask('${task.id}')"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M5 3.5V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v1M5.5 6v4.5M8.5 6v4.5M3 3.5l.7 8a.5.5 0 00.5.5h5.6a.5.5 0 00.5-.5l.7-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}
       </div>
     </div>
     ${task.description ? `<div class="task-desc">${escapeHTML(task.description)}</div>` : ''}
@@ -826,11 +837,11 @@ function renderUploads() {
         <div class="uploader-name"><span style="color: var(--green);">●</span> بواسطة: ${escapeHTML(data.uploaderName || 'مجهول')}</div>
         <div style="display: flex; gap: 8px;">
           <button class="copy-url-btn" onclick="copyUploadById('${data.id}', this)" style="flex: 1;">نسخ الرابط</button>
-          <button onclick="deleteUpload('${data.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 8px; padding: 0 12px; cursor: pointer;" title="حذف الصورة">
+          ${isOwner() ? `<button onclick="deleteUpload('${data.id}')" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 8px; padding: 0 12px; cursor: pointer;" title="حذف الصورة">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
-          </button>
+          </button>` : ''}
         </div>
       </div>
     `;
@@ -844,6 +855,7 @@ function copyUploadById(id, btn) {
 }
 
 function deleteUpload(id) {
+  if (!requireOwner()) return;
   if (!confirm('هل أنت متأكد من حذف هذه الصورة من السجل بشكل نهائي للجميع؟')) return;
   uploadsRef.doc(id).delete().catch(err => alert('فشل الحذف: ' + err.message));
 }
