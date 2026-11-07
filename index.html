@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بوابة المبرمجين — نظام المهام الذكي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- Animated background blobs -->
+  <div class="bg-scene">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="noise-overlay"></div>
+    <div class="floating-symbols">
+      <div class="symbol" style="top: 10%; left: 10%; animation-delay: 0s;">{ }</div>
+      <div class="symbol" style="top: 60%; left: 80%; animation-delay: -5s;">&lt; /&gt;</div>
+      <div class="symbol" style="top: 80%; left: 20%; animation-delay: -10s;">[ ]</div>
+      <div class="symbol" style="top: 20%; left: 70%; animation-delay: -15s;">#</div>
+    </div>
+  </div>
+
+  <!-- World Class View Selector Overlay (Independent) -->
+  <div class="view-selector-overlay" id="view-selector">
+    <div class="selector-content">
+      <h2 class="selector-title">اختر الوجهة</h2>
+      <div class="selector-grid">
+        <div class="selector-card active" id="sel-card-tasks" onclick="switchTab('tasks')">
+          <div class="sel-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          </div>
+          <div class="sel-info">
+            <h3>المهام الرئيسية</h3>
+            <p>إدارة وإنجاز المهام اليومية والتقنية</p>
+          </div>
+        </div>
+        
+        <div class="selector-card" id="sel-card-ideas" onclick="switchTab('ideas')">
+          <div class="sel-icon orange">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <div class="sel-info">
+            <h3>الأفكار المستقبلية</h3>
+            <p>بنك الأفكار والمشاريع القادمة</p>
+          </div>
+        </div>
+
+        <div class="selector-card" id="sel-card-upload" onclick="switchTab('upload')">
+          <div class="sel-icon green">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <div class="sel-info">
+            <h3>مركز الرفع</h3>
+            <p>ارفع صورك واحصل على رابط دائم</p>
+          </div>
+        </div>
+      </div>
+      <button class="selector-close" onclick="toggleViewDropdown(event)">إغلاق القائمة</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+
+    <!-- Header -->
+    <header class="glass-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <div class="logo-icon" onclick="toggleViewDropdown(event)" style="cursor: pointer;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="2" y="2" width="10" height="10" rx="3" fill="rgba(255,255,255,0.9)" />
+              <rect x="16" y="2" width="10" height="10" rx="3" fill="rgba(255,255,255,0.5)" />
+              <rect x="2" y="16" width="10" height="10" rx="3" fill="rgba(255,255,255,0.5)" />
+              <rect x="16" y="16" width="10" height="10" rx="3" fill="rgba(255,255,255,0.7)" />
+            </svg>
+          </div>
+
+          <div>
+            <h1 class="app-title">المبرمجين</h1>
+            <p class="app-sub">سول | نظام إدارة المهام</p>
+          </div>
+        </div>
+        <div class="stats-container">
+          <!-- Tasks Stats -->
+          <div class="stats-row" id="tasks-stats-row">
+            <div class="stat-pill total-pill">
+              <span class="dot blue"></span>
+              <span id="count-total">0</span> الكل
+            </div>
+            <div class="stat-pill done-pill">
+              <span class="dot green"></span>
+              <span id="count-done">0</span> مُنجزة
+            </div>
+            <div class="stat-pill hold-pill">
+              <span class="dot yellow"></span>
+              <span id="count-hold">0</span> قيد العمل
+            </div>
+            <div class="stat-pill notdone-pill">
+              <span class="dot red"></span>
+              <span id="count-notdone">0</span> لم تتم
+            </div>
+            <div class="stat-pill hold-pill">
+              <span id="count-progress">0%</span> الإنجاز
+            </div>
+          </div>
+
+          <!-- Ideas Stats -->
+          <div class="stats-row" id="ideas-stats-row" style="display: none;">
+            <div class="stat-pill total-pill"
+              style="background: rgba(255, 159, 67, 0.15); color: #ff9f43; border-color: rgba(255, 159, 67, 0.2);">
+              <span class="dot" style="background: #ff9f43; box-shadow: 0 0 8px #ff9f43;"></span>
+              <span id="count-ideas-total">0</span> الكل
+            </div>
+            <div class="stat-pill done-pill">
+              <span class="dot green"></span>
+              <span id="count-ideas-done">0</span> مُنجزة
+            </div>
+            <div class="stat-pill hold-pill">
+              <span class="dot yellow"></span>
+              <span id="count-ideas-hold">0</span> قيد العمل
+            </div>
+            <div class="stat-pill notdone-pill">
+              <span class="dot red"></span>
+              <span id="count-ideas-notdone">0</span> لم تتم
+            </div>
+            <div class="stat-pill hold-pill">
+              <span id="count-ideas-progress">0%</span> الإنجاز
+            </div>
+          </div>
+
+          <div class="stat-pill sync-pill" id="sync-status">
+            <span class="dot grey"></span>
+            <span>جاري الاتصال...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Tasks View -->
+    <div id="view-tasks" class="view-content active">
+      <!-- Add Task Area -->
+      <section class="add-section">
+        <div class="glass-add-card">
+          <div class="add-inner column">
+            <div class="input-group">
+              <div class="add-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 4v12M4 10h12" stroke="white" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+              </div>
+              <input id="task-input" type="text" class="task-input" placeholder="اسم المهمة..." autocomplete="off"
+                maxlength="120" />
+            </div>
+            <textarea id="task-desc-input" class="task-desc-input" placeholder="وصف المهمة (اختياري)..."
+              rows="2"></textarea>
+            <button class="add-btn" id="add-btn" onclick="addTask()">
+              <span>إضافة مهمة</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="white" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all', this)">الكل</button>
+        <button class="filter-btn" onclick="setFilter('done', this)">
+          <span class="dot green"></span> مُنجزة
+        </button>
+        <button class="filter-btn" onclick="setFilter('notdone', this)">
+          <span class="dot red"></span> لم تتم
+        </button>
+        <button class="filter-btn" onclick="setFilter('hold', this)">
+          <span class="dot yellow"></span> قيد العمل
+        </button>
+      </div>
+
+      <!-- Tasks Grid -->
+      <main class="tasks-container" id="tasks-container">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">✦</div>
+          <p>لا توجد مهام بعد</p>
+          <span>ابدأ بإضافة مهمتك الأولى</span>
+        </div>
+      </main>
+    </div>
+
+    <!-- Ideas View -->
+    <div id="view-ideas" class="view-content">
+      <section class="add-section">
+        <div class="glass-add-card">
+          <div class="add-inner column">
+            <div class="input-group">
+              <div class="add-icon-wrap" style="background: #ff9f43;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              </div>
+              <input id="idea-input" type="text" class="task-input" placeholder="اسم الفكرة..." maxlength="120" />
+            </div>
+            <textarea id="idea-desc-input" class="task-desc-input" placeholder="وصف الفكرة..." rows="2"></textarea>
+            <button class="add-btn" onclick="addIdea()" style="background: #ff9f43; box-shadow: 0 4px 15px rgba(255,159,67,0.3);">
+              <span>إضافة فكرة</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="ideas-container" id="ideas-container">
+        <!-- Ideas will be injected here -->
+        <div class="empty-state" id="ideas-empty-state">
+          <div class="empty-icon" style="color: #ff9f43;">💡</div>
+          <p>لا توجد أفكار حالياً</p>
+          <span>شاركنا أفكارك الإبداعية</span>
+        </div>
+      </main>
+    </div>
+
+    <!-- Upload View -->
+    <div id="view-upload" class="view-content">
+      <div class="upload-split-layout">
+        
+        <!-- Right Side: Upload Interface -->
+        <section class="upload-section split-right">
+          <div class="glass-upload-card" style="text-align: center; padding: 40px;">
+            <div style="margin-bottom: 20px;">
+              <div class="add-icon-wrap" style="background: var(--green); margin: 0 auto 15px auto; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <h2 style="color: white; font-size: 1.8rem; margin-bottom: 10px;">مركز رفع الصور</h2>
+              <p style="color: var(--text-secondary);">ارفع صورك هنا واحصل على رابط دائم</p>
+            </div>
+
+            <div id="upload-drop-zone" class="upload-drop-zone" onclick="document.getElementById('file-upload-input').click()" style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 20px; padding: 40px; cursor: pointer; transition: all 0.3s; background: rgba(255,255,255,0.02);">
+              <input type="file" id="file-upload-input" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" style="margin-bottom: 15px;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <p style="color: var(--text-primary); font-weight: bold; margin-bottom: 5px;">اضغط هنا لاختيار صورة</p>
+              <p style="color: var(--text-secondary); font-size: 0.9rem;">أو قم بسحب الصورة وإفلاتها هنا</p>
+            </div>
+
+            <div id="upload-progress-area" style="display: none; margin-top: 25px; text-align: right;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: var(--text-primary); font-size: 0.9rem;">جاري الرفع...</span>
+                <span id="upload-percent" style="color: var(--green); font-weight: bold;">0%</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--green); transition: width 0.3s;"></div>
+              </div>
+            </div>
+
+            <div id="upload-result-area" style="display: none; margin-top: 30px; text-align: right;">
+              <p style="color: var(--green); font-weight: bold; margin-bottom: 10px;">✅ تم الرفع بنجاح!</p>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="upload-url-result" class="task-input" readonly style="flex: 1; cursor: text; background: rgba(0,0,0,0.2);">
+                <button class="add-btn" onclick="copyUploadUrl()" style="background: var(--green); min-width: auto; padding: 0 20px;">نسخ</button>
+              </div>
+              <div id="upload-preview-container" style="margin-top: 20px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); display: inline-block; max-width: 100%;">
+                <img id="upload-preview-img" src="" style="max-width: 100%; max-height: 250px; display: block;">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Left Side: History Gallery -->
+        <section class="gallery-section split-left">
+          <div class="gallery-header">
+            <h3 style="color: white; font-size: 1.4rem;">سجل الصور المرفوعة</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">جميع الصور المرفوعة من قبل الأعضاء</p>
+          </div>
+          <div class="gallery-grid" id="uploads-gallery">
+            <!-- Gallery items injected here -->
+          </div>
+        </section>
+        
+      </div>
+    </div>
+
+    <footer class="site-footer">جميع الحقوق محفوظة لسول ستور © 2026</footer>
+
+  </div>
+
+  <!-- Mobile Bottom Navigation (visible on phones only) -->
+  <nav class="mobile-nav" id="mobile-nav">
+    <button class="mobile-nav-btn active" id="mob-btn-tasks" onclick="switchTab('tasks')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      المهام
+    </button>
+    <button class="mobile-nav-btn" id="mob-btn-ideas" onclick="switchTab('ideas')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      الأفكار
+    </button>
+    <button class="mobile-nav-btn" id="mob-btn-upload" onclick="switchTab('upload')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      الرفع
+    </button>
+  </nav>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal-glass" onclick="event.stopPropagation()">
+      <h3 class="modal-title">تعديل المهمة</h3>
+      <div class="modal-inputs" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <input type="text" id="edit-input" class="edit-input" maxlength="120" placeholder="اسم المهمة..." />
+        <textarea id="edit-desc-input" class="task-desc-input" rows="3" placeholder="وصف المهمة..."></textarea>
+
+        <div id="edit-progress-group" style="display: none; margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-size: 0.85rem; color: var(--yellow); font-weight: 700;">نسبة الإنجاز</label>
+            <span id="edit-progress-val"
+              style="font-family: 'Space Mono', monospace; font-weight: 800; color: white;">0%</span>
+          </div>
+          <input type="range" id="edit-progress-input" class="progress-slider" min="0" max="100"
+            oninput="document.getElementById('edit-progress-val').textContent = this.value + '%'">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeModal()">إلغاء</button>
+        <button class="modal-save" onclick="saveEdit()">حفظ</button>
+      </div>
+    </div>
+  </div>
+  <!-- Cloud setup -->
+  <div class="modal-overlay" id="setup-modal">
+    <div class="modal-glass" onclick="event.stopPropagation()" style="max-width: 560px;">
+      <h3 class="modal-title">الربط السحابي</h3>
+      <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 14px; line-height: 1.7;">
+        المهام والأفكار والصور تنحفظ في Firebase وتظهر مباشرة لكل الفريق من أي جوال أو كمبيوتر.
+      </p>
+      <ol style="color: var(--text-primary); font-size: 0.92rem; line-height: 1.9; padding-right: 18px; margin-bottom: 14px;">
+        <li>افتح <b>console.firebase.google.com</b> وأنشئ مشروعاً مجانياً.</li>
+        <li>أنشئ قاعدة <b>Firestore</b> وفعّل <b>Storage</b>.</li>
+        <li>أضف تطبيق ويب وانسخ قيم <b>firebaseConfig</b>.</li>
+        <li>الصقها في ملف <b>firebase-config.js</b> ثم حدّث الصفحة.</li>
+        <li>انسخ قواعد الأمان الموجودة أسفل نفس الملف إلى تبويب Rules.</li>
+      </ol>
+      <p style="color: var(--text-muted); font-size: 0.82rem;">بعد اللصق يشتغل الموقع مثل النسخة الأصلية: تحديث مباشر بين كل الأجهزة.</p>
+    </div>
+  </div>
+
+  <!-- Name Modal -->
+  <div class="modal-overlay" id="name-modal">
+    <div class="modal-glass">
+      <h3 class="modal-title">مرحباً بك</h3>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">الرجاء إدخال اسمك ليظهر للآخرين
+        عند إضافة مهام:</p>
+      <input type="text" id="user-name-input" class="edit-input" placeholder="مثلاً: أحمد، خالد..." maxlength="20" />
+      <div class="modal-actions">
+        <button class="modal-save" onclick="saveName()" style="width: 100%">دخول</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-glass">
+      <h3 class="modal-title" id="confirm-title">تأكيد الإجراء</h3>
+      <p id="confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px;"></p>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeConfirm()">إلغاء</button>
+        <button class="modal-save" id="confirm-yes-btn">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

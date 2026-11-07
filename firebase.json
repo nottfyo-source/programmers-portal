@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "site": "sulstore",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
